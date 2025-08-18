@@ -7,8 +7,7 @@
                     <td v-for="colIndex in element.cols" :key="colIndex" :style="getCellStyle(rowIndex, colIndex)"
                         :class="{ selected: isSelected(rowIndex, colIndex) }" :rowspan="getRowspan(rowIndex, colIndex)"
                         :colspan="getColspan(rowIndex, colIndex)"
-                        @mousedown="handleCellMouseDown(rowIndex, colIndex, $event)"
-                        >
+                        @mousedown="handleCellMouseDown(rowIndex, colIndex, $event)">
                     </td>
                 </tr>
             </tbody>
@@ -31,6 +30,11 @@
         </div>
         <div v-else-if="selectedCells.length > 1 && !canMerge" class="merge-actions" @mousedown.stop>
             <!-- <span class="merge-error">无法合并选中单元格</span> -->
+            <button @click="clearSelection">取消选择</button>
+        </div>
+        <!-- 拆分操作按钮 -->
+        <div v-else-if="canSplit" class="merge-actions" @mousedown.stop>
+            <button @click="splitCell">拆分单元格</button>
             <button @click="clearSelection">取消选择</button>
         </div>
     </div>
@@ -125,6 +129,23 @@ const canMerge = computed(() => {
     if (selectedCells.value.length !== expectedCount) return false;
     return true;
 });
+const canSplit = computed(() => {
+    // 只有选中一个单元格时才可能进行拆分操作
+    if (selectedCells.value.length !== 1) return false;
+
+    const { row, col } = selectedCells.value[0];
+
+    // 检查该单元格是否为合并单元格的起始单元格
+    if (props.element.mergedCells) {
+        return props.element.mergedCells.some(merged =>
+            merged.startRow === row && merged.startCol === col &&
+            (merged.rowspan > 1 || merged.colspan > 1)
+        );
+    }
+
+    return false;
+});
+
 
 // 监听行数/列数变化，重新分配行高/列宽
 watch(() => [props.element.rows, props.element.cols], ([newRows, newCols], [oldRows, oldCols]) => {
@@ -414,7 +435,35 @@ const mergeCells = () => {
     // 清空选择
     selectedCells.value = [];
 };
+// 拆分单元格
+const splitCell = () => {
+    if (!canSplit.value) return;
 
+    const { row, col } = selectedCells.value[0];
+    let mergedCellIndex = -1;
+
+    // 找到要拆分的合并单元格
+    if (props.element.mergedCells) {
+        mergedCellIndex = props.element.mergedCells.findIndex(merged =>
+            merged.startRow === row && merged.startCol === col
+        );
+    }
+
+    if (mergedCellIndex === -1) return;
+
+    // 创建新的合并单元格数组，移除要拆分的单元格
+    const newMergedCells = [...(props.element.mergedCells || [])];
+    newMergedCells.splice(mergedCellIndex, 1);
+
+    // 更新元素
+    emits('update-element', {
+        id: props.element.id,
+        mergedCells: newMergedCells
+    });
+
+    // 清空选择
+    clearSelection();
+};
 // 获取行调整器样式
 const getRowResizerStyle = (rowIndex: number) => {
     let top = 0;
