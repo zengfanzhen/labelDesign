@@ -207,19 +207,19 @@ label-designer/
 ### 安装依赖
 
 ```
-bashnpm install
+npm install
 ```
 
 ### 启动开发服务器
 
 ```
-bashnpm run dev
+npm run dev
 ```
 
 ### 构建生产版本
 
 ```
-bashnpm run build
+npm run build
 ```
 
 ### 代码检查
