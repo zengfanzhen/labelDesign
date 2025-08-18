@@ -1,26 +1,7 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-# labelDesign
-标签编辑器
-=======
-# Vue 3 + TypeScript + Vite
-=======
-# 标签设计器 (Label Designer)
->>>>>>> 1b1838d (feat:标签编辑器README文档编写)
-
-标签设计器是一个基于 Vue 3 + TypeScript + Vite 构建的可视化标签设计工具，支持创建包含文本、条码、二维码、线条、表格等元素的标签，并提供预览和打印功能。
-
-<<<<<<< HEAD
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
->>>>>>> 1ae1162 (feat:初始提交)
-=======
-=======
 # 标签设计器 (Label Designer)
 
 标签设计器是一个基于 Vue 3 + TypeScript + Vite 构建的可视化标签设计工具，支持创建包含文本、条码、二维码、线条、表格等元素的标签，并提供预览和打印功能。
 
->>>>>>> 3189268c0d336855a04a8e6e7e00b02eac433f64
 ## 功能特性
 
 - **可视化编辑**: 拖拽式标签设计界面
@@ -229,9 +210,5 @@ npm run lint
 1. 表格元素功能较为复杂，支持合并单元格和调整行列大小
 2. 文本元素支持双击编辑内容
 3. 预览功能支持变量替换，可查看实际打印效果
-<<<<<<< HEAD
 4. 导出的 JSON 文件包含完整的标签模板信息，可跨设备使用
->>>>>>> 1b1838d (feat:标签编辑器README文档编写)
-=======
-4. 导出的 JSON 文件包含完整的标签模板信息，可跨设备使用
->>>>>>> 3189268c0d336855a04a8e6e7e00b02eac433f64
+
