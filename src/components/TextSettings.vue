@@ -160,10 +160,10 @@ const updateElement = () => {
         inputType: form.inputType,
         style: updatedStyle,
         // 👇 重点：当字体大小变化时，也更新元素高度，以更新缩放框大小
-        size: {
-            ...props.element.size,
-            height: form.fontSize + 20 // 适当加 padding
-        },
+        // size: {
+        //     ...props.element.size,
+        //     height: form.fontSize + 20 // 适当加 padding
+        // },
         options: form.options,
         selectedVariableLabel: form.selectedVariableLabel
     });

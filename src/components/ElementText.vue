@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch, onMounted, computed } from 'vue';
+import { ref, defineProps, defineEmits, watch, onMounted, computed, nextTick } from 'vue';
 import { debounce } from 'lodash-es';
 
 interface Size {
@@ -33,7 +33,61 @@ const props = defineProps({
         default: () => ({})
     }
 });
+const textContainer = ref<HTMLDivElement | null>(null);
+const isUpdating = ref(false);
 
+watch(
+    () => [props.element.content, props.element.style.fontSize],
+    () => {
+        // 防止无限循环更新
+        if (!isUpdating.value) {
+            calculateTextSize();
+        }
+    },
+    { deep: true }
+);
+
+// 计算文本元素的合适大小
+const calculateTextSize = () => {
+    if (props.element.type !== 'text') return;
+
+    const content = props.element.content || '';
+    const fontSize = props.element.style?.fontSize || 14;
+
+    // 根据你提供的换算关系，1pt = 4/3px
+    const fontSizePt = fontSize * 3 / 4; // px转pt
+
+    // 根据字体大小计算字符宽度
+    const charCount = content.length;
+    // 转换为像素单位
+    const estimatedCharWidth = fontSizePt * 4 / 3;
+
+    // 计算合适的宽度和高度
+    const newWidth = Math.max(charCount * estimatedCharWidth + fontSize, 20);
+    const newHeight = Math.max(fontSize + Math.max(fontSize * 0.3, 5), 20);
+
+    // 检查尺寸是否有变化，避免不必要的更新
+    if (Math.abs(newWidth - (props.element.size?.width || 0)) > 1 ||
+        Math.abs(newHeight - (props.element.size?.height || 0)) > 1) {
+
+        isUpdating.value = true;
+
+        // 更新元素大小
+        emits('update-element', {
+            id: props.element.id,
+            size: {
+                ...props.element.size,
+                width: newWidth,
+                height: newHeight
+            }
+        });
+
+        // 在下一个tick重置标志位
+        nextTick(() => {
+            isUpdating.value = false;
+        });
+    }
+};
 onMounted(() => {
     if (props.element.content === '新文本') {
         startEditing();

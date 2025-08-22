@@ -339,15 +339,56 @@ const onResize = (e: MouseEvent) => {
     if (element) {
         switch (element.type) {
             case 'text':
+                const textContent = element.content || '';
+                const fontSize = element.style?.fontSize || 14;
+
+                // 根据你提供的换算关系，1pt = 4/3px
+                const fontSizePt = fontSize * 3 / 4; // px转pt
+
+                // 根据字体大小计算字符宽度
+                const charCount = textContent.length;
+
+                // 对于中文字体，字符宽度通常接近字体大小
+                // 根据字号估算每个字符的宽度（pt为单位）
+                let estimatedCharWidthPt;
+                if (fontSizePt <= 9) { // 小五号及以下
+                    estimatedCharWidthPt = fontSizePt * 1.0;
+                } else if (fontSizePt <= 12) { // 五号到小四
+                    estimatedCharWidthPt = fontSizePt * 0.95;
+                } else if (fontSizePt <= 18) { // 四号到小二
+                    estimatedCharWidthPt = fontSizePt * 0.9;
+                } else { // 大号字体
+                    estimatedCharWidthPt = fontSizePt * 0.85;
+                }
+
+                // 转换为像素单位
+                const estimatedCharWidth = estimatedCharWidthPt * 4 / 3;
+
+                const minWidth = 20; // 最小宽度
+                const minHeight = 20; // 最小高度
+
+                // 根据文本内容计算新的宽度和高度
+                // 添加额外空间确保文本完整显示
+                let calculatedWidth = Math.max(charCount * estimatedCharWidth + fontSize, minWidth);
+                let calculatedHeight = Math.max(fontSize + Math.max(fontSize * 0.3, 5), minHeight);
+
+                // 保持宽高比的缩放
+                const scaleRatio = Math.min(newWidth / calculatedWidth, newHeight / calculatedHeight);
+                newWidth = calculatedWidth * scaleRatio;
+                newHeight = calculatedHeight * scaleRatio;
+
+                // 计算字体大小，使其与元素高度匹配
+                const newFontSize = Math.max(newHeight * 0.7, 8);
+
                 emits('update-element', {
                     id: element.id,
                     style: {
                         ...element.style,
-                        fontSize: newHeight
+                        fontSize: newFontSize
                     },
                     size: {
                         ...element.size,
-                        width: newWidth 
+                        width: newWidth
                     }
                 });
                 break;
