@@ -113,22 +113,7 @@ const colResizeState = ref<{
     initialWidth: 0
 });
 
-// 计算是否可以合并选中的单元格
-const canMerge = computed(() => {
-    if (selectedCells.value.length < 2) return false;
-    // 检查选区是否为连续的矩形区域
-    const rows = selectedCells.value.map(cell => cell.row);
-    const cols = selectedCells.value.map(cell => cell.col);
-    const minRow = Math.min(...rows);
-    const maxRow = Math.max(...rows);
-    const minCol = Math.min(...cols);
-    const maxCol = Math.max(...cols);
-    // 检查是否所有应该被选中的单元格都被选中了（即形成一个完整的矩形）
-    const expectedCount = (maxRow - minRow + 1) * (maxCol - minCol + 1);
-    // console.log('expectedCount:', expectedCount);
-    if (selectedCells.value.length !== expectedCount) return false;
-    return true;
-});
+//计算是否能拆分
 const canSplit = computed(() => {
     // 只有选中一个单元格时才可能进行拆分操作
     if (selectedCells.value.length !== 1) return false;
@@ -147,7 +132,58 @@ const canSplit = computed(() => {
 });
 
 
-// 监听行数/列数变化，重新分配行高/列宽
+// 计算是否可以合并选中的单元格
+const canMerge = computed(() => {
+    if (selectedCells.value.length < 2) return false;
+    // 检查选中的所有单元格是否形成一个矩形区域
+    const allCellsInSelection: { row: number, col: number }[] = [];
+    // 展开所有选中单元格（包括合并单元格中的所有单元格）
+    for (const selectedCell of selectedCells.value) {
+        let isMergedCell = false;
+        if (props.element.mergedCells) {
+            for (const merged of props.element.mergedCells) {
+                if (selectedCell.row === merged.startRow && selectedCell.col === merged.startCol) {
+                    // 添加合并区域中的所有单元格
+                    for (let r = merged.startRow; r <= merged.endRow; r++) {
+                        for (let c = merged.startCol; c <= merged.endCol; c++) {
+                            allCellsInSelection.push({ row: r, col: c });
+                        }
+                    }
+                    isMergedCell = true;
+                    break;
+                }
+            }
+        }
+        // 如果不是合并单元格的起始单元格，则直接添加
+        if (!isMergedCell) {
+            allCellsInSelection.push(selectedCell);
+        }
+    }
+
+    // 检查是否形成矩形区域
+    const rows = allCellsInSelection.map(cell => cell.row);
+    const cols = allCellsInSelection.map(cell => cell.col);
+    const minRow = Math.min(...rows);
+    const maxRow = Math.max(...rows);
+    const minCol = Math.min(...cols);
+    const maxCol = Math.max(...cols);
+    // 计算预期的单元格数量
+    const expectedCount = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+
+    // 实际选中的单元格数量应该等于预期数量
+    if (allCellsInSelection.length !== expectedCount) return false;
+
+    // 检查区域内是否所有单元格都被选中
+    const selectedSet = new Set(allCellsInSelection.map(cell => `${cell.row}-${cell.col}`));
+    for (let r = minRow; r <= maxRow; r++) {
+        for (let c = minCol; c <= maxCol; c++) {
+            if (!selectedSet.has(`${r}-${c}`)) {
+                return false;
+            }
+        }
+    }
+    return true;
+});
 watch(() => [props.element.rows, props.element.cols], ([newRows, newCols], [oldRows, oldCols]) => {
     const updates: any = {};
     let needsUpdate = false;
@@ -239,7 +275,7 @@ const getRowspan = (rowIndex: number, colIndex: number) => {
     if (props.element.mergedCells) {
         for (const merged of props.element.mergedCells) {
             if (rowIndex === merged.startRow && colIndex === merged.startCol) {
-                console.log('row--merged:', merged);
+                // console.log('row--merged:', merged);
                 return merged.endRow - merged.startRow + 1;
             }
         }
@@ -307,12 +343,28 @@ const getCellStyle = (rowIndex: number, colIndex: number) => {
 };
 
 // 检查单元格是否被选中
-const isSelected = (rowIndex: number, colIndex: number) => {
-    return selectedCells.value.some(cell =>
-        cell.row === rowIndex && cell.col === colIndex
-    );
-};
 
+const isSelected = (rowIndex: number, colIndex: number) => {
+    // 检查是否直接选中
+    if (selectedCells.value.some(cell => cell.row === rowIndex && cell.col === colIndex)) {
+        return true;
+    }
+    // 检查是否在已选中的合并单元格范围内
+    for (const selectedCell of selectedCells.value) {
+        if (props.element.mergedCells) {
+            for (const merged of props.element.mergedCells) {
+                if (selectedCell.row === merged.startRow && selectedCell.col === merged.startCol) {
+                    if (rowIndex >= merged.startRow && rowIndex <= merged.endRow &&
+                        colIndex >= merged.startCol && colIndex <= merged.endCol) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+};
 // 处理单元格鼠标按下事件
 const handleCellMouseDown = (rowIndex: number, colIndex: number, event: MouseEvent) => {
     // 如果按下了Ctrl键，则处理单元格选择
@@ -321,10 +373,9 @@ const handleCellMouseDown = (rowIndex: number, colIndex: number, event: MouseEve
         startCellSelection(rowIndex, colIndex);
     }
 };
-
 // 开始单元格选择
 const startCellSelection = (rowIndex: number, colIndex: number) => {
-    // 如果点击的是合并单元格的一部分，则选中整个合并区域
+    // 查找点击的单元格属于哪个合并区域（如果有的话）
     let targetRow = rowIndex;
     let targetCol = colIndex;
 
@@ -342,71 +393,72 @@ const startCellSelection = (rowIndex: number, colIndex: number) => {
     isSelecting.value = true;
     selectionStart.value = { row: targetRow, col: targetCol };
 
-    // 如果已经选择了单元格，则切换选择状态
+    // 如果已经选择了该合并区域，则取消选择
     if (isSelected(targetRow, targetCol)) {
-        selectedCells.value = selectedCells.value.filter(
-            cell => !(cell.row === targetRow && cell.col === targetCol)
-        );
-    } else {
-        selectedCells.value = [...selectedCells.value, { row: targetRow, col: targetCol }];
-    }
-};
-
-// 更新单元格选择（拖拽选择多个单元格）
-const updateCellSelection = (rowIndex: number, colIndex: number) => {
-    if (!isSelecting.value || !selectionStart.value) return;
-
-    const startRow = selectionStart.value.row;
-    const startCol = selectionStart.value.col;
-
-    const minRow = Math.min(startRow, rowIndex);
-    const maxRow = Math.max(startRow, rowIndex);
-    const minCol = Math.min(startCol, colIndex);
-    const maxCol = Math.max(startCol, colIndex);
-
-    const newSelection = [];
-    for (let r = minRow; r <= maxRow; r++) {
-        for (let c = minCol; c <= maxCol; c++) {
-            // 如果单元格是合并单元格的一部分，则添加整个合并区域
-            let cellToAdd = { row: r, col: c };
-
+        // 需要移除整个合并区域的选择
+        selectedCells.value = selectedCells.value.filter(cell => {
+            // 检查是否是直接选中的单元格
+            if (cell.row === targetRow && cell.col === targetCol) {
+                return false;
+            }
+            // 检查是否是合并区域中的单元格
             if (props.element.mergedCells) {
                 for (const merged of props.element.mergedCells) {
-                    if (r >= merged.startRow && r <= merged.endRow &&
-                        c >= merged.startCol && c <= merged.endCol) {
-                        cellToAdd = { row: merged.startRow, col: merged.startCol };
-                        break;
+                    if (cell.row === merged.startRow && cell.col === merged.startCol) {
+                        if (targetRow >= merged.startRow && targetRow <= merged.endRow &&
+                            targetCol >= merged.startCol && targetCol <= merged.endCol) {
+                            return false;
+                        }
                     }
                 }
             }
 
-            // 避免重复添加
-            if (!newSelection.some(cell => cell.row === cellToAdd.row && cell.col === cellToAdd.col)) {
-                newSelection.push(cellToAdd);
-            }
-        }
+            return true;
+        });
+    } else {
+        // 添加选择
+        selectedCells.value = [...selectedCells.value, { row: targetRow, col: targetCol }];
     }
-
-    selectedCells.value = newSelection;
-};
-
-// 结束单元格选择
-const endCellSelection = () => {
-    isSelecting.value = false;
 };
 
 // 清除单元格选择
 const clearSelection = () => {
     selectedCells.value = [];
 };
-
 // 合并单元格
 const mergeCells = () => {
     if (!canMerge.value) return;
 
-    // 计算选择区域的边界
-    const rows = selectedCells.value.map(cell => cell.row);
-    const cols = selectedCells.value.map(cell => cell.col);
+    // 收集所有需要合并的单元格（包括已合并的单元格）
+    const allCellsToMerge: { row: number, col: number }[] = [];
+
+    for (const selectedCell of selectedCells.value) {
+        let isMergedCell = false;
+
+        if (props.element.mergedCells) {
+            for (const merged of props.element.mergedCells) {
+                if (selectedCell.row === merged.startRow && selectedCell.col === merged.startCol) {
+                    // 添加整个合并区域
+                    for (let r = merged.startRow; r <= merged.endRow; r++) {
+                        for (let c = merged.startCol; c <= merged.endCol; c++) {
+                            allCellsToMerge.push({ row: r, col: c });
+                        }
+                    }
+                    isMergedCell = true;
+                    break;
+                }
+            }
+        }
+
+        // 如果不是合并单元格，则直接添加
+        if (!isMergedCell) {
+            allCellsToMerge.push(selectedCell);
+        }
+    }
+
+    // 计算合并区域的边界
+    const rows = allCellsToMerge.map(cell => cell.row);
+    const cols = allCellsToMerge.map(cell => cell.col);
     const startRow = Math.min(...rows);
     const endRow = Math.max(...rows);
     const startCol = Math.min(...cols);
@@ -421,12 +473,27 @@ const mergeCells = () => {
         colspan: endCol - startCol + 1,
         rowspan: endRow - startRow + 1
     };
-    console.log('newMergedCell', newMergedCell);
-    // 更新元素
+    // 更新元素 - 需要移除被合并的旧合并单元格，并添加新的合并单元格
     const mergedCells = props.element.mergedCells ? [...props.element.mergedCells] : [];
-    console.log('mergedCells11111', mergedCells);
+
+    // 移除被新合并区域覆盖的旧合并单元格
+    const cellsToRemove: number[] = [];
+    for (let i = 0; i < mergedCells.length; i++) {
+        const merged = mergedCells[i];
+        // 检查旧合并区域是否与新合并区域有重叠
+        if (!(merged.startRow > endRow || merged.endRow < startRow ||
+            merged.startCol > endCol || merged.endCol < startCol)) {
+            cellsToRemove.push(i);
+        }
+    }
+
+    // 从后往前删除，避免索引问题
+    for (let i = cellsToRemove.length - 1; i >= 0; i--) {
+        mergedCells.splice(cellsToRemove[i], 1);
+    }
+
+    // 添加新的合并单元格
     mergedCells.push(newMergedCell);
-    console.log('mergedCells22222', mergedCells);
     emits('update-element', {
         id: props.element.id,
         mergedCells
