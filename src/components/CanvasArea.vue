@@ -45,6 +45,7 @@ import ElementLine from './ElementLine.vue';
 import ElementVLine from './ElementVLine.vue';
 import ElementRectangle from './ElementRectangle.vue';
 import ElementTable from './ElementTable.vue';
+import ElementTextarea from './ElementTextarea.vue';
 
 // ========== 数据类型定义 ==========
 interface Position {
@@ -89,6 +90,7 @@ const isAddingMode = ref(false);
 // ========== 组件映射 ==========
 const components = {
     text: ElementText,
+    textarea: ElementTextarea,
     barcode: ElementBarcode,
     qrcode: ElementQrcode,
     line: ElementLine,
@@ -486,7 +488,9 @@ const addElementByTool = (e: MouseEvent) => {
 const getDefaultSize = (tool: string): Size => {
     switch (tool) {
         case 'text':
-            return { width: 200, height: 30 };
+            return { width: 120, height: 30 };
+        case 'textarea':
+            return { width: 80, height: 60 };
         case 'barcode':
             return { width: 180, height: 100 };
         case 'line':
@@ -515,6 +519,8 @@ const getDefaultContent = (tool: string): string => {
     switch (tool) {
         case 'text':
             return '新文本';
+        case 'textarea':
+            return '多行文本\n双击编辑';
         case 'barcode':
             return '123456';
         case 'qrcode':  

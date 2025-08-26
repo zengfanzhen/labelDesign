@@ -9,6 +9,15 @@
                 添加文本</el-button>
         </div>
         <div class="tool-group">
+            <h4>多行文本</h4>
+            <el-button @click="selectTool('textarea')">
+                <el-icon>
+                    <Plus />
+                </el-icon>
+                添加多行文本
+            </el-button>
+        </div>
+        <div class="tool-group">
             <h4>横线</h4>
             <el-button @click="selectTool('line')">
                 <el-icon>

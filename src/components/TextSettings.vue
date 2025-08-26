@@ -19,9 +19,9 @@
             </el-select>
         </el-form-item>
 
-        <el-form-item label="字体大小">
+        <!-- <el-form-item label="字体大小">
             <el-input v-model="form.fontSize" type="number" min="10" max="48" suffix="px" @change="updateElement" />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="字体颜色">
             <el-color-picker v-model="form.color" size="small" @change="updateElement" />

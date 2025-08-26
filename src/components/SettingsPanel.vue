@@ -34,6 +34,7 @@
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 import TextSettings from './TextSettings.vue';
+import TextareaSettings from './TextareaSettings.vue';  
 import BarcodeSettings from './BarcodeSettings.vue';
 import LineSettings from './LineSettings.vue';
 import RectangleSettings from './RectangleSettings.vue';
@@ -46,6 +47,7 @@ const emits = defineEmits(['update-label', 'update-element', 'clear-canvas']);
 // 元素设置组件映射
 const settingsComponents = {
     text: TextSettings,
+    textarea: TextareaSettings,
     barcode: BarcodeSettings, 
     qrcode: BarcodeSettings, 
     line: LineSettings,
