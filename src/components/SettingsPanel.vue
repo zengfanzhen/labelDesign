@@ -3,15 +3,15 @@
         <!-- 标签全局设置 -->
         <div class="label-settings">
             <h4>画布设置</h4>
-            <el-form :model="labelSettings" label-width="60px">
-                <el-form-item label="宽">
+            <el-form :model="labelSettings" label-width="80px">
+                <el-form-item label="画布宽度">
                     <el-input type="number" v-model="labelSettings.width" @change="updateLabel" />
                 </el-form-item>
-                <el-form-item label="高">
+                <el-form-item label="画布高度">
                     <el-input type="number" v-model="labelSettings.height" @change="updateLabel" />
                 </el-form-item>
                 <!-- 添加背景颜色设置 -->
-                <el-form-item label="背景色">
+                <el-form-item label="画布颜色">
                     <el-color-picker v-model="labelSettings.backgroundColor" @change="updateLabel" />
                 </el-form-item>
                 <el-button @click="clearCanvas">清空画布</el-button>
