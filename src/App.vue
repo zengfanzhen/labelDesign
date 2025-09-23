@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <el-container style="height: 100%;">
-      <el-aside width="300px">
+      <el-aside width="140px">
         <Toolbar @select-tool="setCurrentTool" />
       </el-aside>
       <el-container>
-        <el-header style="height: 100px;">
+        <el-header style="height: 40px;">
           <Preview :label-settings="labelSettings" :elements="elements" :data-variables="dataVariables"
             @close="closePreview" @import-data="handleImportData" />
         </el-header>
@@ -18,7 +18,7 @@
               :label-settings="labelSettings" :elements="elements" :data-variables="dataVariables"
               @select-element="setCurrentElement" @update-element="updateElement" @add-element="addElement" />
           </el-main>
-          <el-aside width="300px" style="margin: 30px;">
+          <el-aside width="260px" style="margin-right: 20px;">
             <SettingsPanel :current-element="currentElement" :label-settings="labelSettings" :elements="elements"
               @update-label="updateLabelSettings" @update-element="updateElement" @clear-canvas="clearCanvas" />
           </el-aside>
@@ -46,7 +46,7 @@ const setCurrentElement = (element: any) => {
 const currentTool = ref<string | null>(null); // 当前选中的工具（文本/条码等）
 const currentElement = ref<any | null>(null); // 当前选中的元素
 const copiedElement = ref<any | null>(null); // 复制的元素
-const labelSettings = reactive({ width: 800, height: 600, overflow: true, background: '' }); // 标签全局设置
+const labelSettings = reactive({ width: 1400, height: 800, overflow: true, background: '' }); // 标签全局设置
 const elements = reactive<any[]>([]); // 元素列表（文本、条码等）
 // const activeTab = ref('设置'); // 右侧面板当前 tab
 const isPreviewOpen = ref(false); // 是否显示预览弹窗

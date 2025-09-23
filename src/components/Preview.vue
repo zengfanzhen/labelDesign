@@ -455,11 +455,11 @@ const print = () => {
 
 <style scoped>
 .preview-container {
-    padding: 20px;
+    padding: 0px;
 }
 
 .preview-actions {
-    margin-bottom: 20px;
+    margin: 5px;
     text-align: right;
 }
 

@@ -76,7 +76,8 @@ const updateElement = (updatedElement: any) => emits('update-element', updatedEl
 
 <style scoped>
 .settings-panel {
-    padding: 10px;
+    width: 260px;
+    padding: 0px;
 }
 
 .label-settings {

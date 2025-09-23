@@ -570,7 +570,7 @@ defineExpose({ setAddingMode });
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 80%;
+    height: 95%;
 }
 
 .label-container {
