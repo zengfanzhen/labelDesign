@@ -28,6 +28,7 @@ const rectangleStyle = computed(() => {
         height: '100%',
         border: props.element.style?.border || '1px solid #000',
         backgroundColor: props.element.style?.background || 'transparent',
+        borderRadius: props.element.style?.borderRadius || '0px'  // 添加这行
     };
     return style;
 });

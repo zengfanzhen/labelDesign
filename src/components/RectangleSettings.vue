@@ -24,6 +24,10 @@
         <el-form-item label="高度">
             <el-input-number v-model="form.height" :min="1" @change="updateSize" />
         </el-form-item>
+        <!-- 圆角弧度 -->
+        <el-form-item label="圆角弧度">
+            <el-input-number v-model="form.borderRadius" :min="0" :max="50" @change="updateStyle" />
+        </el-form-item>
     </el-form>
 </template>
 
@@ -74,20 +78,20 @@ const extractBorderColor = (borderStyle) => {
     return '#000';
 };
 
-// 改进的 form 初始化
 const form = reactive({
     borderColor: extractBorderColor(props.element.style?.border) || '#000',
     fillColor: props.element.style?.background || 'transparent',
     borderWidth: parseInt(props.element.style?.border?.split(' ')[0]) || 1,
+    borderRadius: parseInt(props.element.style?.borderRadius) || 0, // 添加圆角属性
     width: props.element.size?.width || 100,
     height: props.element.size?.height || 50
 });
 
-// 改进的 watch 监听器
 watch(() => props.element, (newVal) => {
     form.borderColor = extractBorderColor(newVal.style?.border) || '#000';
     form.fillColor = newVal.style?.background || 'transparent';
     form.borderWidth = parseInt(newVal.style?.border?.split(' ')[0]) || 1;
+    form.borderRadius = parseInt(newVal.style?.borderRadius) || 0; // 同步圆角属性
     form.width = newVal.size?.width || 100;
     form.height = newVal.size?.height || 50;
 }, { deep: true });
@@ -100,7 +104,8 @@ const updateStyle = () => {
         style: {
             ...props.element.style,
             border: `${form.borderWidth}px solid ${form.borderColor}`,
-            background: form.fillColor
+            background: form.fillColor,
+            borderRadius: `${form.borderRadius}px` // 添加圆角样式
         }
     });
 };
