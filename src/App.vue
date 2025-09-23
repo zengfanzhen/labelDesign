@@ -36,6 +36,7 @@ import SettingsPanel from './components/SettingsPanel.vue';
 import Preview from './components/Preview.vue';
 import { cloneDeep } from 'lodash-es';
 import { ElMessage } from 'element-plus'; 
+import { backgroundClip } from 'html2canvas/dist/types/css/property-descriptors/background-clip';
 
 // 元素选择
 const setCurrentElement = (element: any) => {
@@ -46,7 +47,7 @@ const setCurrentElement = (element: any) => {
 const currentTool = ref<string | null>(null); // 当前选中的工具（文本/条码等）
 const currentElement = ref<any | null>(null); // 当前选中的元素
 const copiedElement = ref<any | null>(null); // 复制的元素
-const labelSettings = reactive({ width: 1400, height: 800, overflow: true, background: '' }); // 标签全局设置
+const labelSettings = reactive({ width: 1400, height: 800, overflow: true, background: '',backgroundColor: '#ffffff' }); // 标签全局设置
 const elements = reactive<any[]>([]); // 元素列表（文本、条码等）
 // const activeTab = ref('设置'); // 右侧面板当前 tab
 const isPreviewOpen = ref(false); // 是否显示预览弹窗

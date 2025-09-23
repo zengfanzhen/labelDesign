@@ -4,7 +4,8 @@
             width: `${labelSettings.width}px`,
             height: `${labelSettings.height}px`,
             overflow: labelSettings.overflow ? 'hidden' : 'visible',
-            backgroundSize: 'cover'
+            backgroundSize: 'cover',
+            backgroundColor: labelSettings.backgroundColor || '#ffffff',
             }" @click="handleCanvasClick">
             <!-- 元素列表（循环渲染） -->
             <div v-for="(el, index) in elements" :key="el.id" class="element"

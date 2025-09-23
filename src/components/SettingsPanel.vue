@@ -10,12 +10,12 @@
                 <el-form-item label="高">
                     <el-input type="number" v-model="labelSettings.height" @change="updateLabel" />
                 </el-form-item>
+                <!-- 添加背景颜色设置 -->
+                <el-form-item label="背景色">
+                    <el-color-picker v-model="labelSettings.backgroundColor" @change="updateLabel" />
+                </el-form-item>
                 <el-button @click="clearCanvas">清空画布</el-button>
-                <!-- <el-form-item label="背景">
-                    <el-upload :auto-upload="false" :on-change="uploadBackground">
-                        <el-button type="primary">选择背景图</el-button>
-                    </el-upload>
-                </el-form-item> -->
+
             </el-form>
         </div>
 
