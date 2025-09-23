@@ -1,5 +1,6 @@
 <!-- src/components/ElementRectangle.vue -->
 <template>
+    <!-- 矩形元素 -->
     <div class="element-rectangle" :style="rectangleStyle">
     </div>
 </template>
@@ -28,14 +29,6 @@ const rectangleStyle = computed(() => {
         border: props.element.style?.border || '1px solid #000',
         backgroundColor: props.element.style?.background || 'transparent',
     };
-
-    // 如果有旋转属性，添加旋转变换
-    const rotation = props.element.style?.rotation || 0;
-    if (rotation !== 0) {
-        style.transform = `rotate(${rotation}deg)`;
-        style.transformOrigin = 'center center';
-    }
-
     return style;
 });
 </script>

@@ -32,24 +32,66 @@ import { reactive, defineProps, defineEmits, watch } from 'vue';
 
 const props = defineProps({ element: Object });
 const emits = defineEmits(['update-element']);
+const rgbToHex = (rgb) => {
+    if (!rgb) return '#000000';
 
-// 表单状态
+    // 如果已经是十六进制格式，直接返回
+    if (rgb.startsWith('#')) return rgb;
+
+    // 处理 rgb 格式
+    const result = rgb.match(/\d+/g);
+    if (!result || result.length < 3) return '#000000';
+
+    const r = parseInt(result[0]).toString(16).padStart(2, '0');
+    const g = parseInt(result[1]).toString(16).padStart(2, '0');
+    const b = parseInt(result[2]).toString(16).padStart(2, '0');
+
+    return `#${r}${g}${b}`;
+};// 改进的颜色提取函数，更好地处理各种颜色格式
+const extractBorderColor = (borderStyle) => {
+    if (!borderStyle) return '#000';
+
+    // 匹配十六进制颜色 (#xxx 或 #xxxxxx)
+    const hexMatch = borderStyle.match(/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
+    if (hexMatch) return hexMatch[0];
+
+    // 匹配 RGB/RGBA 颜色并转换为十六进制
+    const rgbMatch = borderStyle.match(/rgb\(?([^)]+)\)?/i);
+    if (rgbMatch) {
+        const values = rgbMatch[1].split(',').map(v => parseInt(v.trim()));
+        if (values.length >= 3) {
+            const r = values[0].toString(16).padStart(2, '0');
+            const g = values[1].toString(16).padStart(2, '0');
+            const b = values[2].toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+    }
+
+    // 匹配颜色名称
+    const namedColorMatch = borderStyle.match(/\b[a-zA-Z]+\b/);
+    if (namedColorMatch) return namedColorMatch[0];
+
+    return '#000';
+};
+
+// 改进的 form 初始化
 const form = reactive({
-    borderColor: props.element.style?.border?.split(' ')[1] || '#000',
+    borderColor: extractBorderColor(props.element.style?.border) || '#000',
     fillColor: props.element.style?.background || 'transparent',
     borderWidth: parseInt(props.element.style?.border?.split(' ')[0]) || 1,
     width: props.element.size?.width || 100,
     height: props.element.size?.height || 50
 });
 
-// 监听外部传入的 element 变化
+// 改进的 watch 监听器
 watch(() => props.element, (newVal) => {
-    form.borderColor = newVal.style?.border?.split(' ')[1] || '#000';
+    form.borderColor = extractBorderColor(newVal.style?.border) || '#000';
     form.fillColor = newVal.style?.background || 'transparent';
     form.borderWidth = parseInt(newVal.style?.border?.split(' ')[0]) || 1;
     form.width = newVal.size?.width || 100;
     form.height = newVal.size?.height || 50;
 }, { deep: true });
+
 
 // 更新样式（边框、背景）
 const updateStyle = () => {
